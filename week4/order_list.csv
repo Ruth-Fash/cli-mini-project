@@ -1,0 +1,8 @@
+Customer name,Customer address,Customer phone,Courier index,Status,Drink index,Food index
+Jessica Smith,"120 Chnacery Lane, London E2 36T, E2 36t",079054456543,"{'Courier Name': 'Speedy Eatz', 'Driver Name': 'Luke Ringo', 'Phone Number': '07845738555'}",Preparing,1,"1,3"
+Ruth Fash,"66 Bennets, London",079054896541,"{'Courier Name': 'Uber Eats', 'Driver Name': 'Matt', 'Phone Number': '07985739021'}",Order Confirmed,,"1,5"
+Mark Taylor,"88 Baker Street, London",078903456789,"{'Courier Name': 'Deliveroo', 'Driver Name': 'Juls', 'Phone Number': '07985739021'}",Shipped,2,"2,4"
+Emily Green,"45 Elm Road, Manchester",078754321012,"{'Courier Name': 'Just Eat', 'Driver Name': 'Jodie', 'Phone Number': '07985739021'}",Delivered,3,"4,6"
+Jamie Foxx,"78 Kingley Hall, London, E2 r6h",077123456789,"{'Courier Name': 'Speedy Eatz', 'Driver Name': 'Luke Ringo', 'Phone Number': '07845738555'}",Preparing,6,10
+Florence Wellington,"22 Nicholas Road, London, E1 4ty",07956899945,"{'Courier Name': 'Speedy Eatz', 'Driver Name': 'Luke Ringo', 'Phone Number': '07845738555'}",Delivered,3,4
+Lucy Smith,"237 Zoo Lane, London, E2 rhy",07904594342,"{'Courier Name': 'Grub Hub', 'Driver Name': 'Paul White', 'Phone Number': '07886666554'}",Preparing,"0,4",1

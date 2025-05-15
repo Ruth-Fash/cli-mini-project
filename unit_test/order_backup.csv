@@ -1,0 +1,3 @@
+Customer name,Customer address,Customer phone,Courier index,Status,Drink index,Food index
+Ruth Fash,"66 Bennets, London",079054896541,"{'Company': 'Uber Eats', 'Name': 'Matt', 'Number': '07985739021'}",Order Confirmed,,"1,5"
+Jessic Williams,"14 James Riley Point, London, E1 7HY",07746666379,"{'Company': 'Uber Eats', 'Name': 'Matt', 'Number': '07985739021'}",Delivered,"12,8","3,10"

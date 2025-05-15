@@ -1,0 +1,12 @@
+Espresso
+Americano
+Latte
+Cappuccino
+Macchiato
+Matcha Latte
+Hot Chocolate
+Chai Latte
+Green Tea
+Black tea
+Still water
+Orange juice
