@@ -4,6 +4,9 @@ from rich import print
 from rich.console import Console
 console = Console()
 import csv
+import psycopg2 as psycopg
+import os
+from dotenv import load_dotenv
 
 
 
@@ -55,6 +58,15 @@ food_list = [{'Name':'Avocado_toast','Price': 5.00},
 
 
 
+# Load environment variables from .env file
+load_dotenv()
+host_name = os.environ.get("POSTGRES_HOST")
+print("Host from env:", os.getenv("POSTGRES_HOST"))
+database_name = os.environ.get("POSTGRES_DB")
+user_name = os.environ.get("POSTGRES_USER")
+user_password = os.environ.get("POSTGRES_PASSWORD")
+
+
 
 # GENERAL:
 
@@ -75,34 +87,54 @@ def write_product_csv(csvname,write_data):
         print(f"Error: You don't have permission to read this file.")
 
 # Function to read(r) the csv file. State the filename you want to use (csvname)
-def read_product_csv(csvname):
+def read_product_db(table_name):
     try:
-        with open(csvname +'_list.csv','r') as file:
-            readcsv = list(csv.DictReader(file))
 
-            if not readcsv:  #checking if read(the csv) is empty
-                print("[bold red]No products available.[/bold red]")
-                return
+        # Establishing a connection 
+        with psycopg.connect(f"""
+            host={host_name}
+            dbname={database_name}
+            user={user_name}
+            password={user_password}
+            """) as connection:
+
+
+            with connection.cursor() as cursor:  # WITH - allows you to open cursor and automatically close the cursor.
+
+                query = f'SELECT * FROM {table_name} ORDER BY id ASC'
+                cursor.execute(query)
+                product_rows = cursor.fetchall()
             
-            for index,rows in enumerate(readcsv):
-                print(f"{index}:  {rows['Name']} - £{rows['Price']}")        
+                for row in product_rows: 
+                    print(f"ID: {row[0]}, Name: {row[1]}, Price: {row[2]}")
     
-    except PermissionError:
-        print(f"Error: You don't have permission to read this file.")
-    except FileNotFoundError:
-        print(f"Error: The file does not exist.")
-            
+    except Exception as ex:
+        print('Failed to:', ex)
 
+         
 
 # Function to append(a) the csv file. State the filename you want to use (csvname) and what you are adding to it(append)
-def append_product_csv(csvname,append):
+def append_product_db(table_name,value):
+
     try:
-        with open(csvname +'_list.csv','a') as file:
-            fieldnames = ['Name','Price']
-            write = csv.DictWriter(file, fieldnames=fieldnames)
-            write.writerow(append)
-    except PermissionError:
-        print(f"Error: You don't have permission to read this file.")
+        # Establishing a connection 
+        with psycopg.connect(f"""
+            host={host_name}
+            dbname={database_name}
+            user={user_name}
+            password={user_password}
+            """) as connection:
+
+
+            with connection.cursor() as cursor:  # WITH - allows you to open cursor and automatically close the cursor.
+
+                query = f"""INSERT INTO {table_name} (name, price)\
+                            VALUES (%s, %s)"""
+                cursor.execute(query, value)
+                connection.commit()
+
+    except Exception as ex:
+        print('Failed to:', ex)
 
 
 # Function to print out csv after reading, if reading doesn't already include print function in it like #2
@@ -134,10 +166,6 @@ def read_only_product(csvname):
         print(f"Error: You don't have permission to read this file.")
 
 
-
-
-
-
 # Product_menu = 3 & 4 (Adding a drink/food item).
 # Functions to ask user for food/drink name, price
 def modify_drinkname():
@@ -161,7 +189,7 @@ def new_drinks():
         print("[bold red]Invalid price. Please enter a valid number.[/bold red]")
         return None  # Return None if price is invalid
             
-    return {"Name" : drink_name, "Price" : float(drink_price) }    # Proceed if both name and price are valid
+    return (drink_name, drink_price)    # Proceed if both name and price are valid
 
 
 def modify_foodname():
@@ -176,17 +204,16 @@ def new_food():
         return None  # Return None if inputs are invalid
 
     try:
-        drink_price = float(drink_price)
+        food_price = float(food_price)
     except ValueError:
         print("[bold red]Invalid price. Please enter a valid number.[/bold red]")
         return None  # Return None if price is invalid
 
-
-    return {"Name" : modify_foodname(), "Price" : modify_price() }
+    return (food_name, food_price )
 
 
 def select_index():
-    return int(console.input("[bold]Please select an index \t[/bold]"))
+    return console.input("[bold]Please select an index \t[/bold]")
 
 def updated_product():
     return str(console.input("[bold]Enter new name for (leave blank to keep current name): \t[/bold]")).title()
@@ -214,11 +241,11 @@ def save_exit_drinks():
 # Prints list, appends given user inputs into the csv; user input if to add another
 # While loop - if n return to product menu, other wise loop back to top and ask to addd new product
 def add_drink():
-        read_product_csv('drinks')
+        read_product_db('drinks_list')
         newdrink = new_drinks() 
         
         if newdrink:
-            append_product_csv('drinks',newdrink)
+            append_product_db('drinks_list',newdrink)
             print("[bold green]Drinks menu changes have been saved.[/bold green]")
         else:
              print("[bold red]Failed to add the drink due to invalid input.[/bold red]")
@@ -227,11 +254,11 @@ def add_drink():
 # Selected_product_menu == 4
 # Same as above
 def add_food():
-        read_product_csv('food')
+        read_product_db('food_list')
         newfood = new_food() 
         
         if newfood:
-            append_product_csv('drinks',newfood)
+            append_product_db('food_list',newfood)
             print("[bold green]Drinks menu changes have been saved.[/bold green]")
         else:
              print("[bold red]Failed to add the drink due to invalid input.[/bold red]")   
@@ -242,55 +269,108 @@ def add_food():
 # Read and print csv; User inputs for drink index to update, and updates drink/price. If user leaves blank will stay as orginal
 # If not it will update and write it back into the csv 
 def update_drink():
-        readcsv = read_only_product('drinks')
-        display_product_csv(readcsv)
+    read_product_db('drinks_list')
 
-        index = select_index()
-        drinkname = updated_product()
-        price = updated_price()
+    index = select_index()
+    drinkname = updated_product()
+    price = updated_price()
+
+    try:
+        # Establishing a connection 
+        with psycopg.connect(f"""
+            host={host_name}
+            dbname={database_name}
+            user={user_name}
+            password={user_password}
+            """) as connection:
 
 
-        if drinkname:
-            readcsv[index]['Name'] = drinkname
-            print("[bold green]Name has been updated[/bold green].")
-        else:
-            print("[bold red]Name not updated.[/bold red]")
+            with connection.cursor() as cursor:  # WITH - allows you to open cursor and automatically close the cursor.
+
+                if drinkname and price:
+                    query = f'UPDATE drinks_list \
+                            SET name = %s, price = %s WHERE id = %s'
+                    cursor.execute(query, (drinkname, price, index))
+
+                elif drinkname:
+                    query = f'UPDATE drinks_list \
+                            SET name = %s WHERE id = %s'
+                    cursor.execute(query, (drinkname, index))
+
+                elif price:
+                    query = f'UPDATE drinks_list \
+                            SET price = %s WHERE id = %s'
+                    cursor.execute(query, (price, index))
+                
+                else:
+                    print("[bold red]Nothing to update.[/bold red]")
+                    return
+                
+                if cursor.rowcount == 0:
+                    print(f"[bold red]No food found with ID {index}. Nothing was deleted.[/bold red]")
+
+                else:
+                    connection.commit()
+                    print("[bold green]Food updated successfully.[/bold green]")
 
 
-        if price:
-            readcsv[index]['Price'] = float(price)
-            print("[bold green]Price has been updated[/bold green]")
-        else:
-            print("[bold red]Price not updated.[/bold red]")
+    except Exception as ex:
+        print('Failed to:', ex)
 
-        write_product_csv('drinks',readcsv) 
+
 
 
 
 # Selected_product_menu == 6
 # Same as above but for food
 def update_food():
-        readcsv = read_only_product('food')
-        display_product_csv(readcsv)
+    read_product_db('food_list')
 
-        index = select_index()
-        foodname = updated_product()
-        price = updated_price()
+    index = select_index()
+    foodname = updated_product()
+    price = updated_price()
+    
+    try:
+        # Establishing a connection 
+        with psycopg.connect(f"""
+            host={host_name}
+            dbname={database_name}
+            user={user_name}
+            password={user_password}
+            """) as connection:
 
 
-        if foodname:
-            readcsv[index]['Name'] = foodname
-            print("[bold green]Name has been updated[/bold green].")
-        else:
-            print("[bold red]Name not updated.[/bold red]")
+            with connection.cursor() as cursor:  # WITH - allows you to open cursor and automatically close the cursor.
 
-        if price:
-            readcsv[index]['Price'] = float(price)
-            print("[bold green]Price has been updated[/bold green]")
-        else:
-            print("[bold red]Price not updated.[/bold red]")
 
-        write_product_csv('food',readcsv) 
+                if foodname and price:
+                    query = f'UPDATE food_list \
+                            SET name = %s, price = %s WHERE id = %s'
+                    cursor.execute(query, (foodname, price, index))
+
+                elif foodname:
+                    query = f'UPDATE food_list \
+                            SET name = %s WHERE id = %s'
+                    cursor.execute(query, (foodname, index))
+
+                elif price:
+                    query = f'UPDATE food_list \
+                            SET price = %s WHERE id = %s'
+                    cursor.execute(query, (price, index))
+                
+                else:
+                    print("[bold red]Nothing to update.[/bold red]")
+                    return
+
+                if cursor.rowcount == 0:
+                    print(f"[bold red]No food found with ID {index}. Nothing was deleted.[/bold red]")
+
+                else:
+                    connection.commit()
+                    print("[bold green]Food updated successfully.[/bold green]")
+
+    except Exception as ex:
+        print('Failed to:', ex)
 
 
 
@@ -298,38 +378,65 @@ def update_food():
 # Read and print csv; User inputs for drink index to delete, and updates drink/price. 
 # It will update and write it back into the csv 
 def del_drink():
+
+    read_product_db('drinks_list')
+    index = select_index()
+
     try:
-            readcsv = read_only_product('drinks')
-            display_product_csv(readcsv)
+        # Establishing a connection 
+        with psycopg.connect(f"""
+            host={host_name}
+            dbname={database_name}
+            user={user_name}
+            password={user_password}
+            """) as connection:
 
-            index = select_index()
-            del readcsv[index]
+            with connection.cursor() as cursor:  # WITH - allows you to open cursor and automatically close the cursor.
+                query = " DELETE FROM drinks_list WHERE id = %s"
+                cursor.execute(query,(index,))
 
-            write_product_csv('drinks',readcsv) 
-            print("[bold green]The item has been succesfully deleted.[/bold green]")
-    except ValueError:
-        print("[bold red]Update unsucessful. A valid value was not entered.[/bold red]")
-    except IndexError:
-        print("[bold red]Update unsucessful. The index entered does not exist.[/bold red]")
+                if cursor.rowcount == 0:
+                    print(f"[bold red]No drink found with ID {index}. Nothing was deleted.[/bold red]")
+
+                else:
+                    connection.commit()
+                    print("[bold green]The item has been succesfully deleted.[/bold green]")
+
+    except Exception as ex:
+        print('Failed to:', ex)
+
 
         
 # Selected_product_menu == 8
 # Same as above but for food
 def del_food():
+
+    read_product_db('food_list')
+    index = select_index()
+
     try:
-            readcsv = read_only_product('food')
-            display_product_csv(readcsv)
+        # Establishing a connection 
+        with psycopg.connect(f"""
+            host={host_name}
+            dbname={database_name}
+            user={user_name}
+            password={user_password}
+            """) as connection:
 
-            index = select_index()
-            del readcsv[index]
-            
-            write_product_csv('food',readcsv) 
-            print("[bold green]The item has been succesfully deleted.[/bold green]")
+            with connection.cursor() as cursor:  # WITH - allows you to open cursor and automatically close the cursor.
+                query = " DELETE FROM food_list WHERE id = %s"
+                cursor.execute(query,(index,))
 
-    except ValueError:
-        print("[bold red]Update unsucessful. A valid value was not entered.[/bold red]")
-    except IndexError:
-        print("[bold red]Update unsucessful. The index entered does not exist.[/bold red]")
+                if cursor.rowcount == 0:
+                    print(f"[bold red]No drink found with ID {index}. Nothing was deleted.[/bold red]")
+
+                else:
+                    connection.commit()
+                    print("[bold green]The item has been succesfully deleted.[/bold green]")
+
+    except Exception as ex:
+        print('Failed to:', ex)
+
 
 
 

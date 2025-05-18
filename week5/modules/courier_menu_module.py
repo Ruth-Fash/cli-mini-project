@@ -21,8 +21,8 @@ courier_menu = [
 
 
 courier_list = [{"Courier Name" : "Deliveroo", "Driver Name" : "Juls", "Phone Number" : "07985739021"},
-                {"Courier Name" : "Uber Eats", "Driver Name" : "Matt", "Phone Number" : "07985739021"},
-              {"Courier Name" : "Just Eat", "Driver Name" : "Jodie", "Phone Number" : "07985739021"}]
+                {"Courier Name" : "Uber Eats", "Driver Name" : "Matt", "Phone Number" : "07985739345"},
+              {"Courier Name" : "Just Eat", "Driver Name" : "Jodie", "Phone Number" : "07904594342"}]
 
 
 

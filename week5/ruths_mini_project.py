@@ -19,7 +19,7 @@ main_menu = [
 
 from modules.product_menu_module import (product_menu, drinks_list,\
       food_list, new_drinks, new_food,\
-       write_product_csv, append_product_csv, read_product_csv, display_product_csv, del_food, del_drink,\
+       write_product_csv, append_product_db, read_product_db, display_product_csv, del_food, del_drink,\
        update_food, update_drink, read_only_product, save_exit_food, save_exit_drinks, add_drink, add_food, product_menu_header)
 
 from modules.order_menu_module import (order_menu, order_dictionary, order_status,\
@@ -84,7 +84,7 @@ while True:
             
             elif selected_product_menu == 1:
                 clear_screen()
-                read_product_csv('drinks')
+                read_product_db('drinks_list')
                 return_to_submenu('product')         # User input to go back to sub-menu; While loop - if 0 breaks loop back to the product menu, else if you don't it will print error message and loop back to user input to go to sub menu 
 
 
@@ -92,7 +92,7 @@ while True:
 # 2 = Prints the food dictionary from the csv using the function 
             elif selected_product_menu == 2 :
                 clear_screen()
-                read_product_csv('food')
+                read_product_db('food_list')  
                 return_to_submenu('product') 
 
 # 3 = Adding a new drink to csv. 

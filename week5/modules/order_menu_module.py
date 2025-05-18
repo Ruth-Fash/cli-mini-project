@@ -11,7 +11,7 @@ from modules.courier_menu_module import courier_menu, courier_list,\
 
 from modules.product_menu_module import product_menu, drinks_list,\
       food_list, new_drinks, new_food,\
-       write_product_csv, append_product_csv, read_product_csv, display_product_csv
+       write_product_csv, append_product_db, read_product_db, display_product_csv
 
 from modules.functions_module \
 import display, \
@@ -152,10 +152,10 @@ def new_customer_order():
         new_address_full = f"{new_address_street}, {new_address_city}, {new_address_postcode}"
         new_customer_number = phone_number()
 
-        read_product_csv('drinks')
+        read_product_db('drinks_list')
         drink_index = product_index()
 
-        read_product_csv('food')
+        read_product_db('food_list')
         food_index = product_index()
 
         readcsv = read_only_courier()
@@ -233,10 +233,10 @@ def update_order():
 
     selected_courier = select_courier()   
 
-    read_product_csv('drinks')
+    read_product_db('drinks_list')
     drink_index = product_index()
 
-    read_product_csv('food')
+    read_product_db('food_list')
     food_index = product_index()
 
     if update_street and update_city and update_postcode:
