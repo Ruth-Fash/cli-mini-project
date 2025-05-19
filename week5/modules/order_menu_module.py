@@ -7,7 +7,7 @@ from rich.console import Console
 console = Console()
 
 from modules.courier_menu_module import courier_menu, courier_list,\
-    read_courier_csv, append_courier_csv, display_courier_csv, write_courier_csv, update_courier, select_courier, read_only_courier
+    read_courier_db, append_courier_db, write_courier_csv, update_courier, select_courier, read_only_courier
 
 from modules.product_menu_module import product_menu, drinks_list,\
       food_list, new_drinks, new_food,\
@@ -159,7 +159,7 @@ def new_customer_order():
         food_index = product_index()
 
         readcsv = read_only_courier()
-        display_courier_csv(readcsv)
+        read_courier_db(readcsv)
 
         selected_courier = select_courier()           # Selecting courier from the courier csv
 
@@ -228,8 +228,7 @@ def update_order():
         update_address = f"{update_street}, {update_city}, {update_postcode}"
 
 
-    read_courier_csv = read_only_courier()
-    display_courier_csv(read_courier_csv)
+    read_courier_db
 
     selected_courier = select_courier()   
 

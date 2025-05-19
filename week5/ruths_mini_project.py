@@ -26,8 +26,8 @@ from modules.order_menu_module import (order_menu, order_dictionary, order_statu
     write_order_csv, read_order_csv, append_order_csv, display_order_csv, new_customer_order, update_order, del_order,\
     update_order_status, read_only_order, save_exit_order, order_menu_header)
 from modules.courier_menu_module import (courier_menu, courier_list,\
-    read_courier_csv, append_courier_csv, display_courier_csv, write_courier_csv, update_courier, select_courier, read_only_courier,\
-    save_exit_courier, add_courier, del_courier, courier_menu_header)
+    read_courier_db, append_courier_db, write_courier_csv, update_courier, select_courier, read_only_courier,\
+    save_exit_courier, add_courier, del_courier, courier_menu_header, get_connection)
 
 
 # ---------------------------------------------------------------------  FUNCTION MODULE -------------------------------------------------------------------  
@@ -292,7 +292,7 @@ while True:
 # 1 = Print courier list
             elif courier_menu_answer == 1:
                 clear_screen()
-                read_courier_csv()
+                read_courier_db()
                 return_to_submenu('courier')
 
 
@@ -300,9 +300,18 @@ while True:
             elif courier_menu_answer == 2:
                 clear_screen()
                 try:
-                    add_courier()
+                    conn = get_connection()
+                    append_courier_db(conn)
+                    conn.close()
+
+                    if add_another() != 'y':
+                        return_to_submenu('courier')
+
                 except ValueError:
                     print("[bold red]Update unsucessful. A valid value was not entered.[/bold red]")
+
+
+
 
 
 
@@ -311,16 +320,18 @@ while True:
                 while True:
                     clear_screen()
                     try:
-                        update_courier() 
+                        update_courier()
+
+                        if add_another() != 'y':
+                            return_to_submenu('courier')
+
 
                     except IndexError:
                         print("[bold red]Update unsucessful. The index entered does not exist.[/bold red]")
                     except ValueError:
                         print("[bold red]Update unsucessful. A valid value was not entered.[/bold red]")
 
-                    if add_another() != 'y':
-                        return_to_submenu('courier')
-                        break
+
 
 
 # 4 = Deleting an existing courier
