@@ -20,14 +20,14 @@ main_menu = [
 from modules.product_menu_module import (product_menu, drinks_list,\
       food_list, new_drinks, new_food,\
        write_product_csv, append_product_db, read_product_db, display_product_csv, del_food, del_drink,\
-       update_food, update_drink, read_only_product, save_exit_food, save_exit_drinks, add_drink, add_food, product_menu_header)
+       update_food, update_drink, add_drink, add_food, product_menu_header)
 
 from modules.order_menu_module import (order_menu, order_dictionary, order_status,\
     write_order_csv, read_order_csv, append_order_csv, display_order_csv, new_customer_order, update_order, del_order,\
     update_order_status, read_only_order, save_exit_order, order_menu_header)
+
 from modules.courier_menu_module import (courier_menu, courier_list,\
-    read_courier_db, append_courier_db, write_courier_csv, update_courier, select_courier, read_only_courier,\
-    save_exit_courier, add_courier, del_courier, courier_menu_header, get_connection)
+    read_courier_db, append_courier_db, update_courier_db, select_courier, del_courier_db, courier_menu_header, get_connection)
 
 
 # ---------------------------------------------------------------------  FUNCTION MODULE -------------------------------------------------------------------  
@@ -38,10 +38,8 @@ import display,\
 
 
 # ------------------------------------------------------------------------  MAIN MENU -------------------------------------------------------------------  
-read_only_product('drinks')
-read_only_product('food')
+
 read_only_order()
-read_only_courier()
 clear_screen()
 # main menu input - select option from main menu
 while True:
@@ -52,9 +50,6 @@ while True:
 
 # Select 0 = reads drink,food,courier,order dictionaries to csv file with r mode and exits printing a message; 
     if main_menu_answer == 0 :
-        save_exit_drinks()
-        save_exit_food()
-        save_exit_courier()
         save_exit_order()
 
         print ('"[bold green]Data saved. Exiting app...[/bold green]')
@@ -287,62 +282,61 @@ while True:
             if courier_menu_answer == 0:
                 clear_screen()
                 break
+                
 
 
 # 1 = Print courier list
             elif courier_menu_answer == 1:
                 clear_screen()
-                read_courier_db()
+                conn = get_connection()
+                read_courier_db(conn)
+                conn.close()
+                
                 return_to_submenu('courier')
 
 
  # 2 = Add new courier
             elif courier_menu_answer == 2:
-                clear_screen()
-                try:
+                while True:
+                    clear_screen()
                     conn = get_connection()
                     append_courier_db(conn)
                     conn.close()
 
                     if add_another() != 'y':
                         return_to_submenu('courier')
-
-                except ValueError:
-                    print("[bold red]Update unsucessful. A valid value was not entered.[/bold red]")
-
-
-
-
-
+                        break
 
 # 3 = Update existing courier
             elif courier_menu_answer == 3:
-                while True:
+
+                 while True:
                     clear_screen()
-                    try:
-                        update_courier()
+                    conn = get_connection()
+                    read_courier_db(conn)
+                    update_courier_db(conn)                        
+                    conn.close()
 
-                        if add_another() != 'y':
-                            return_to_submenu('courier')
-
-
-                    except IndexError:
-                        print("[bold red]Update unsucessful. The index entered does not exist.[/bold red]")
-                    except ValueError:
-                        print("[bold red]Update unsucessful. A valid value was not entered.[/bold red]")
+                    if add_another() != 'y':
+                        return_to_submenu('courier')
+                        break
 
 
 
 
 # 4 = Deleting an existing courier
             elif courier_menu_answer == 4:
+                
                 while True:
                     clear_screen()
-                    del_courier()
+                    conn = get_connection()
+                    read_courier_db(conn)
+                    del_courier_db(conn)
 
                     if delete_another() != 'y':
                         return_to_submenu('courier')
                         break
+
 
 
 # In the sub menu section, if they select things other than 0 or 1 or 2, below message will appear.                     

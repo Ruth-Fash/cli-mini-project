@@ -288,17 +288,17 @@ def update_drink():
             with connection.cursor() as cursor:  # WITH - allows you to open cursor and automatically close the cursor.
 
                 if drinkname and price:
-                    query = f'UPDATE drinks_list \
+                    query = 'UPDATE drinks_list \
                             SET name = %s, price = %s WHERE id = %s'
                     cursor.execute(query, (drinkname, price, index))
 
                 elif drinkname:
-                    query = f'UPDATE drinks_list \
+                    query = 'UPDATE drinks_list \
                             SET name = %s WHERE id = %s'
                     cursor.execute(query, (drinkname, index))
 
                 elif price:
-                    query = f'UPDATE drinks_list \
+                    query = 'UPDATE drinks_list \
                             SET price = %s WHERE id = %s'
                     cursor.execute(query, (price, index))
                 

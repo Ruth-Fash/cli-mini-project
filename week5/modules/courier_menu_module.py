@@ -45,51 +45,106 @@ def get_connection():
     password={user_password}
     """)
 
+def input_business_name():
+    while True:
+        user_input = console.input("[bold]Enter the courier company name \t[/bold]").title()
+        if not user_input:
+            print("[bold red]Courier company name cannot be empty. Please enter a valid name.[/bold red]")
+            continue
+        return user_input
 
-#GENERAL 
-# Function to write(w) in the csv file 
-# - Must state data you want to write into it ('write_data'), and for product nust also state filename. 
+def input_business_name_optional():
+    return console.input("[bold]Enter the courier company name \t[/bold]").title()
+
+def input_driver_name():
+    while True:
+        user_input = console.input("[bold]Enter the courier driver's name: [/bold]").title()
+        if any(char.isdigit() for char in user_input):
+            print("Invalid: Only letters are allowed.")
+            continue
+        if user_input == "":
+            print("Driver name cannot be empty. Please enter a valid name.")
+            continue
+        return user_input
+
+def input_driver_name_optional():
+    while True:
+        user_input = console.input("[bold]Enter the courier drivers name \t[/bold]").title()
+        if any(char.isdigit() for char in user_input): 
+            print ("Invalid: Only letters are allowed.")
+            continue
+
+        return user_input
+
+    
+def input_phone_number():
+    while True:
+        user_input = console.input("[bold]Enter courier phone number \t[/bold]")
+
+        if user_input == "":
+            print("Driver name cannot be empty. Please enter a valid name.")
+            continue
+
+        if not user_input.isdigit() or not len(user_input) == 11:
+            print("Invalid: Must be exactly 11 digits with no letters or symbols.")
+            continue
+
+        return user_input
+    
+def input_phone_number_optional():
+    while True:
+        user_input = console.input("[bold]Enter courier phone number (leave blank to keep current): [/bold]").strip()
+
+        if user_input == "":
+            return None  # blank allowed here
+
+        if not user_input.isdigit() or len(user_input) != 11:
+            print("[bold red]Invalid: Must be exactly 11 digits with no letters or symbols.[/bold red]")
+            continue
+
+        return user_input
+
+
 
 def select_courier():
-    user_input = console.input("[bold]Select courier index\t[/bold]")
+    connection = get_connection()
+    with connection.cursor() as cursor:
+        query = f'SELECT * FROM courier_list ORDER BY courier_id ASC'
+        cursor.execute(query)
+        courier_rows = cursor.fetchall()
 
-    if not user_input or not user_input.isdigit():  # Check if input is empty or not a digit
-        print("[bold red]Error: Please enter a valid courier index (a number).[/bold red]")
-        return None  # Return None to indicate invalid input
+        try:
+            user_input = console.input("[bold]Select courier index: [/bold]")
+            if not user_input or not user_input.isdigit():
+                print("[bold red]Error: Please enter a number.[/bold red]")
+                return None
 
-    return int(user_input)  # Return the input as an integer if it is valid
+            selected_id = int(user_input)
+            courier_ids = [row[0] for row in courier_rows]  # Extract just the IDs
+
+            if selected_id not in courier_ids:
+                print("[bold red]Error: Selected courier ID does not exist.[/bold red]")
+                return None
+
+            return selected_id
+
+        except ValueError:
+            print("[bold red]Update unsuccessful. A valid number was not entered.[/bold red]")
+            return None
 
 
-def write_courier_csv(write_data):
+
+# Function to read(r) the csv file: 
+def read_courier_db(connection):
     try:
-        with open ('courier_list.csv',"w") as file:
-            fieldnames = ['Courier Name','Driver Name','Phone Number']
-            writefile = csv.DictWriter(file,fieldnames=fieldnames)
-            writefile.writeheader()
-            writefile.writerows(write_data) 
-    except PermissionError:
-        print(f"Error: You don't have permission to read this file.")
 
-#2 Function to read(r) the csv file: 
-def read_courier_db():
-    try:
+        with connection.cursor() as cursor:  # WITH - allows you to open cursor and automatically close the cursor.
 
-        # Establishing a connection 
-        with psycopg.connect(f"""
-            host={host_name}
-            dbname={database_name}
-            user={user_name}
-            password={user_password}
-            """) as connection:
-
-
-            with connection.cursor() as cursor:  # WITH - allows you to open cursor and automatically close the cursor.
-
-                query = f'SELECT * FROM courier_list ORDER BY courier_id ASC'
-                cursor.execute(query)
-                courier_rows = cursor.fetchall()
-            
-                for row in courier_rows: 
+            query = f'SELECT * FROM courier_list ORDER BY courier_id ASC'
+            cursor.execute(query)
+            courier_rows = cursor.fetchall()
+        
+            for row in courier_rows: 
                     print(f"ID: {row[0]}, Courier Name: {row[1]}, Driver Name: {row[2]}, Phone Number: {row[3]}")
     
     except Exception as ex:
@@ -103,6 +158,7 @@ def append_courier_db(connection):
     courier_name = input_business_name()
     driver_name = input_driver_name()
     phone_number = input_phone_number()
+
     try:
         
         with connection.cursor() as cursor:
@@ -111,125 +167,93 @@ def append_courier_db(connection):
             
             cursor.execute(query, (courier_name, driver_name, phone_number))
             connection.commit()
+            print("[bold green]Courier successfully added to the database.[/bold green]")
+
 
     except Exception as ex:
         print('Failed to:', ex)
 
-        
 
-
-
-#5 Function to read only, no printing
-def read_only_courier():
-    try:
-        with open ('courier_list.csv','r') as file:
-            read_csv = list(csv.DictReader(file))
-            return read_csv
-    except PermissionError:
-        print(f"Error: You don't have permission to read this file.")   
-    except FileNotFoundError:
-        print(f"Error: The file does not exist.")
-
-def input_business_name():
-    return console.input("[bold]Enter the courier company name \t[/bold]").title()
-def input_driver_name():
-    return console.input("[bold]Enter the courier drivers name \t[/bold]").title()
-def input_phone_number():
-    return console.input("[bold]Enter courier phone number \t[/bold]").title()
 
 
 
 # ------------------------------------------------- Main components of mini project ------------------------------------------------------------- 
 
 
-# When exiting, saves changes back into csv from what was read csv at the beginning 
-def save_exit_courier():
-    save_exit = read_only_courier()
-    write_courier_csv(save_exit)
-
-# Courier_menu_answer == 2:
-def add_courier():
-    while True:
-        clear_screen()
-
-        courier_name = input_business_name()
-        driver_name = input_driver_name()
-        phone_number = input_phone_number()
-
-    # Check if any input field is empty
-        if not courier_name or not driver_name or not phone_number:
-            print("[bold red]Update Unsucessful: All fields (Courier Name, Driver Name, Phone Number) are required[/bold red]")
-            return_to_submenu('courier')
-            break  # Exit the loop if there's an invalid input
-
-
-    # Store the valid data in the new_courier dictionary
-        new_courier = {"Courier Name": courier_name, "Driver Name": driver_name, "Phone Number": phone_number}
-
-    # Check if phone number is valid    
-        if new_courier["Phone Number"].isdigit() and len(new_courier["Phone Number"]) == 11:
-            append_courier_db(new_courier)
-            print("[bold green]Courier changes have been saved[/bold green]")
-
-            if add_another() != 'y':
-                return_to_submenu('courier')
-                break
-        else:
-            print("[bold red]Update unsuccessful: Please ensure the phone number contains exactly 11 digits[/bold red]")
-            return_to_submenu('courier')
-            break                    
-
 # Courier_menu_answer == 3: 
    # 3 = Update existing courier
     # • Print list, • Select index to update, • Insert new name, 
     # • Updates courier list based of index selected to = input in updated_courier
-def update_courier():
+def update_courier_db(connection):
+    
+    while True:
+        courier_index = select_courier()
+        if courier_index is None:
+            continue
+        courier_name = input_business_name_optional()
+        driver_name = input_driver_name_optional()
+        phone_number = input_phone_number_optional()
+        break
+
+
+    try:
+        with connection.cursor() as cursor:
+
+            updated_fields = []
+            values = []       
+
+            if courier_name:
+                updated_fields.append("courier_name = %s")
+                values.append(courier_name)
+
+            if driver_name:
+                updated_fields.append("driver_name = %s")
+                values.append(driver_name)
+
+            if phone_number:
+                updated_fields.append("phone_number = %s")
+                values.append(phone_number)
+
+            if not updated_fields:
+                print("[bold red]Nothing to update.[/bold red]")
+                return
             
-    read_courier_db()
-    
-    courier_index = select_courier()
-    business_name = input_business_name()
-    driver_name = input_driver_name()
-    phone_number = input_phone_number()
+            values.append(courier_index)
+            
+            query =f"UPDATE courier_list SET {','.join(updated_fields)} WHERE courier_id = %s"
+            cursor.execute(query,tuple(values))
 
-    clear_screen()
-
-    if business_name:
-        readcsv[courier_index]['Courier Name'] = business_name
-        print("[bold green]Courier Name has been updated[/bold green]")
-    else:
-        print("[bold red]Courier Name not updated[/bold red]")
+            if cursor.rowcount == 0:
+                print(f"[bold red]No courier found with ID {courier_index}. Nothing was updated.[/bold red]")
+            else:
+                connection.commit()
+                print("[bold green]Courier updated successfully.[/bold green]")
 
 
-    if driver_name:  
-        readcsv[courier_index]['Driver Name'] = driver_name
-        print("[bold green]Driver name has been updated[/bold green]")
-    else:
-        print("[bold red]Driver name not updated[/bold red]")
+    except Exception as ex:
+        print('Failed to update courier:', ex)
 
 
-    if phone_number:
-        if phone_number.isdigit() and len(phone_number) == 11:
-            readcsv[courier_index]['Phone Number'] = phone_number
-            print("[bold green]Courier number has been updated[/bold green]")
-        else:
-            print("[bold red]Update unsuccessful: Please ensure the phone number contains exactly 11 digits[/bold red]")
-    else:
-        print("[bold red]Courier number not updated[/bold red]")
-    
-    write_courier_csv(readcsv)
 
 # Courier_menu_answer == 4: 
-def del_courier():
+def del_courier_db(connection):
     try:
-        read_courier_db()
 
         courier_index = select_courier()
-        del readcsv[courier_index]
 
-        write_courier_csv(readcsv)
-        
-        print("[bold green]The courier has been succesfully deleted.[/bold green]")
+        try:
+            with connection.cursor() as cursor:
+                query = "DELETE FROM courier_list WHERE COURIER_ID = %s"
+                cursor.execute(query, (courier_index, ))
+
+                connection.commit()
+                print("[bold green]Courier deleted successfully.[/bold green]")
+
+
+        except Exception as ex:
+            print('Failed to delete courier:', ex)
+
+    
     except ValueError:
         print("[bold red]Update unsucessful. A valid value was not entered.[/bold red]")
     except IndexError:

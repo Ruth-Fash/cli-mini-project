@@ -7,7 +7,7 @@ from rich.console import Console
 console = Console()
 
 from modules.courier_menu_module import courier_menu, courier_list,\
-    read_courier_db, append_courier_db, write_courier_csv, update_courier, select_courier, read_only_courier
+    read_courier_db, append_courier_db, update_courier_db, select_courier
 
 from modules.product_menu_module import product_menu, drinks_list,\
       food_list, new_drinks, new_food,\
