@@ -3,6 +3,9 @@ sys.path.append('/Users/ruthfashogbon/Desktop/Generation')
 import csv
 from rich.console import Console
 console = Console()
+import psycopg2 as psycopg
+import os
+from dotenv import load_dotenv
 
 
 # Function to print all menus and lists given input where menu is stated
@@ -39,6 +42,22 @@ def add_another():
 # Clears the screen as you naviagate through the app
 def clear_screen():
     print("\033c", end="")
+
+# Load environment variables from .env file
+load_dotenv()
+host_name = os.environ.get("POSTGRES_HOST")
+print("Host from env:", os.getenv("POSTGRES_HOST"))
+database_name = os.environ.get("POSTGRES_DB")
+user_name = os.environ.get("POSTGRES_USER")
+user_password = os.environ.get("POSTGRES_PASSWORD")
+
+def get_connection():
+    return psycopg.connect(f"""
+    host={host_name}
+    dbname={database_name}
+    user={user_name}
+    password={user_password}
+    """)
 
 
 

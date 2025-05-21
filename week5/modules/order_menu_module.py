@@ -10,8 +10,8 @@ from modules.courier_menu_module import courier_menu, courier_list,\
     read_courier_db, append_courier_db, update_courier_db, select_courier
 
 from modules.product_menu_module import product_menu, drinks_list,\
-      food_list, new_drinks, new_food,\
-       write_product_csv, append_product_db, read_product_db, display_product_csv
+      food_list,\
+     read_product_db
 
 from modules.functions_module \
 import display, \

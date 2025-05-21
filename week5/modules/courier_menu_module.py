@@ -4,14 +4,12 @@ import csv
 from rich import print
 from rich.console import Console
 console = Console()
-
 import psycopg2 as psycopg
 import os
 from dotenv import load_dotenv
 
-from modules.functions_module \
-import display, \
-        return_to_submenu, return_answer, delete_another, add_another, clear_screen
+from modules.functions_module import (get_connection)
+
 
 def courier_menu_header():
     print( """[bold]Courier Menu[/bold]""")
@@ -37,13 +35,7 @@ database_name = os.environ.get("POSTGRES_DB")
 user_name = os.environ.get("POSTGRES_USER")
 user_password = os.environ.get("POSTGRES_PASSWORD")
 
-def get_connection():
-    return psycopg.connect(f"""
-    host={host_name}
-    dbname={database_name}
-    user={user_name}
-    password={user_password}
-    """)
+
 
 def input_business_name():
     while True:
@@ -105,7 +97,6 @@ def input_phone_number_optional():
         return user_input
 
 
-
 def select_courier():
     connection = get_connection()
     with connection.cursor() as cursor:
@@ -132,6 +123,8 @@ def select_courier():
             print("[bold red]Update unsuccessful. A valid number was not entered.[/bold red]")
             return None
 
+
+# ------------------------------------------------- Main components of mini project ------------------------------------------------------------- 
 
 
 # Function to read(r) the csv file: 
@@ -172,12 +165,6 @@ def append_courier_db(connection):
 
     except Exception as ex:
         print('Failed to:', ex)
-
-
-
-
-
-# ------------------------------------------------- Main components of mini project ------------------------------------------------------------- 
 
 
 # Courier_menu_answer == 3: 

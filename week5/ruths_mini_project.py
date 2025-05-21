@@ -18,8 +18,8 @@ main_menu = [
 
 
 from modules.product_menu_module import (product_menu, drinks_list,\
-      food_list, new_drinks, new_food,\
-       write_product_csv, append_product_db, read_product_db, display_product_csv, del_food, del_drink,\
+      food_list,
+     read_product_db, del_food, del_drink,\
        update_food, update_drink, add_drink, add_food, product_menu_header)
 
 from modules.order_menu_module import (order_menu, order_dictionary, order_status,\
@@ -29,6 +29,7 @@ from modules.order_menu_module import (order_menu, order_dictionary, order_statu
 from modules.courier_menu_module import (courier_menu, courier_list,\
     read_courier_db, append_courier_db, update_courier_db, select_courier, del_courier_db, courier_menu_header, get_connection)
 
+from modules.functions_module import (get_connection)
 
 # ---------------------------------------------------------------------  FUNCTION MODULE -------------------------------------------------------------------  
 
@@ -79,7 +80,9 @@ while True:
             
             elif selected_product_menu == 1:
                 clear_screen()
-                read_product_db('drinks_list')
+                conn = get_connection()
+                read_product_db(conn,'drinks_list')
+                conn.close()
                 return_to_submenu('product')         # User input to go back to sub-menu; While loop - if 0 breaks loop back to the product menu, else if you don't it will print error message and loop back to user input to go to sub menu 
 
 
@@ -87,43 +90,48 @@ while True:
 # 2 = Prints the food dictionary from the csv using the function 
             elif selected_product_menu == 2 :
                 clear_screen()
-                read_product_db('food_list')  
+                conn = get_connection()
+                read_product_db(conn,'food_list')  
+                conn.close()
                 return_to_submenu('product') 
 
 # 3 = Adding a new drink to csv. 
             elif selected_product_menu == 3 :
                 while True:
                     clear_screen()
-                    add_drink()
-
+                    conn = get_connection()
+                    read_product_db(conn,'drinks_list')
+                    add_drink(conn,'drinks_list')
+                    conn.close()
+                
                     if add_another() != 'y':
                         return_to_submenu('products')
-                        break
-                    
+                        break        
 
 # 4 = Adding a new food to csv. 
 # Same as above from food
-
-            elif selected_product_menu == 4 :
+            elif selected_product_menu == 4:
                 while True:
-                    add_food()
+                    clear_screen()
+                    conn = get_connection()
+                    read_product_db(conn,'food_list')
+                    add_food(conn,'food_list')
+                    conn.close()
+                
                     if add_another() != 'y':
                         return_to_submenu('products')
-                        break 
+                        break
 
 # 5 = Updating an exisiting drinks name and/or price
 
             elif selected_product_menu == 5 :
-                while True:
+                while True:    
                     clear_screen()
-                    try:
-                        update_drink()
-
-                    except ValueError:
-                        print("[bold red]Update unsucessful. A valid value was not entered.[/bold red]")
-                    except IndexError:
-                        print("[bold red]Update unsucessful. The index entered does not exist.[/bold red]") 
-                                    
+                    conn = get_connection()
+                    read_product_db(conn,'drinks_list')
+                    update_food(conn)
+                    conn.close()
+                    
                     if add_another() != 'y':
                         return_to_submenu('products')
                         break
@@ -134,25 +142,23 @@ while True:
             elif selected_product_menu == 6 :
                 while True:    
                     clear_screen()
-                    try:
-                        update_food()
-
-                    except ValueError:
-                        print("[bold red]Update unsucessful. A valid value was not entered.[/bold red]")
-                    except IndexError:
-                        print("[bold red]Update unsucessful. The index entered does not exist.[/bold red]")
+                    conn = get_connection()
+                    read_product_db(conn,'food_list')
+                    update_food(conn)
+                    conn.close()
                     
                     if add_another() != 'y':
                         return_to_submenu('products')
                         break
 
-
 # 7 = Deleting a drink
             elif selected_product_menu == 7 :
                 while True:
                     clear_screen()
-
-                    del_drink()
+                    conn = get_connection()
+                    read_product_db('drinks_list')
+                    del_drink(conn)
+                    conn.close
 
                     if delete_another() != 'y':
                         return_to_submenu('products')
@@ -163,11 +169,13 @@ while True:
             elif selected_product_menu == 8:
                 while True:
                     clear_screen()
+                    conn = get_connection()
+                    read_product_db('food_list')
+                    del_drink(conn)
+                    conn.close
 
-                    del_food()
-                        
                     if delete_another() != 'y':
-                        return_to_submenu('product')
+                        return_to_submenu('products')
                         break
                     
 
@@ -283,7 +291,6 @@ while True:
                 clear_screen()
                 break
                 
-
 
 # 1 = Print courier list
             elif courier_menu_answer == 1:
