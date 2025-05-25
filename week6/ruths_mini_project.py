@@ -186,7 +186,6 @@ while True:
                 return_to_submenu('product')
               
 
-    # ------------------------------------------------------------------ ORDER MENU ---------------------------------------------------------------------  
 
 # Select 3 from main menu = navigates to order menu in the module py
     elif main_menu_answer == 3:
@@ -248,14 +247,10 @@ while True:
             elif order_menu_answer == 4:
                 while True:
                     clear_screen()
-                    try:
-                        update_order()
+                    conn = get_connection()
+                    update_order(conn)
+                    conn.close
                       
-                    except ValueError:
-                        print("[bold red]Update unsucessful. A valid value was not entered.[/bold red]")
-                    except IndexError:
-                        print("[bold red]Update unsucessful. The index entered does not exist.[/bold red]")
-
                     if add_another() != 'y':
                         return_to_submenu('order')
                         break    
@@ -263,7 +258,9 @@ while True:
             elif order_menu_answer == 5:
                 while True:
                     clear_screen()
-                    del_order()
+                    conn = get_connection()
+                    del_order(conn)
+                    conn.close
 
                     if delete_another() != 'y':
                         return_to_submenu('order')

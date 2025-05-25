@@ -108,24 +108,47 @@ def select_index(table_name):
             cursor.execute(query)
             product_rows = cursor.fetchall()
 
-            try:
-                user_input = console.input("[bold]Please select an index \t[/bold]")
-                if not user_input or not user_input.isdigit():
-                    print("[bold red]Error: Please enter a number.[/bold red]")
-                    continue
-                
-                selected_id = int(user_input)
-                product_ids = [int(row[0]) for row in product_rows]  # Extract just the IDs
-
-                if selected_id not in product_ids:
-                    print("[bold red]Error: Selected ID does not exist.[/bold red]")
-                    continue
-
-                return selected_id
-
-            except ValueError:
-                print("[bold red]Update unsuccessful. A valid ID was not entered.[/bold red]")
+            user_input = console.input("[bold]Please select an index \t[/bold]")
+            if not user_input or not user_input.isdigit():
+                print("[bold red]Error: Please enter a number.[/bold red]")
                 continue
+            
+            selected_id = int(user_input)
+            product_ids = [int(row[0]) for row in product_rows]  # Extract just the IDs
+
+            if selected_id not in product_ids:
+                print("[bold red]Error: Selected ID does not exist.[/bold red]")
+                continue
+
+            return selected_id
+
+
+def select_index_optional(table_name):
+
+    while True:
+        connection = get_connection()
+        with connection.cursor() as cursor: 
+            query = f'SELECT * FROM {table_name} ORDER BY id ASC'
+            cursor.execute(query)
+            product_rows = cursor.fetchall()
+
+            user_input = console.input("[bold]Please select an index \t[/bold]")
+
+            if not user_input:
+                return None
+            
+            if not user_input.isdigit():
+                print("[bold red]Error: Please enter a number.[/bold red]")
+                continue
+            
+            selected_id = int(user_input)
+            product_ids = [int(row[0]) for row in product_rows]  # Extract just the IDs
+
+            if selected_id not in product_ids:
+                print("[bold red]Error: Selected ID does not exist.[/bold red]")
+                continue
+
+            return selected_id
   
 
 def updated_product():

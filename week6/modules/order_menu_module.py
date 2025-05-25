@@ -7,15 +7,15 @@ from rich.console import Console
 console = Console()
 
 from modules.courier_menu_module import courier_menu, courier_list,\
-    read_courier_db, append_courier_db, update_courier_db, select_courier
+    read_courier_db, append_courier_db, update_courier_db, select_courier, select_courier_optional
 
-from modules.product_menu_module import product_menu, drinks_list, select_index,\
+from modules.product_menu_module import product_menu, drinks_list, select_index, select_index_optional,\
       food_list,\
      read_product_db
 
 from modules.functions_module \
 import display, \
-        return_to_submenu, return_answer, delete_another, add_another, clear_screen
+        return_to_submenu, return_answer, delete_another, add_another, clear_screen, get_connection
 import csv
 
 def order_menu_header():
@@ -60,20 +60,46 @@ order_status = ['Order Pending','Order Confirmed','Preparing','Out for Delivery'
 def read_order_db(connection):
     try:
         with connection.cursor() as cursor:  # WITH - allows you to open cursor and automatically close the cursor.
-            query = "SELECT * FROM order_list"
+            query = "SELECT * FROM order_list ORDER BY id ASC"
 
             cursor.execute(query)
             order_rows = cursor.fetchall()
 
             for row in order_rows :
-                print(f"ID:{row[0]}, Customer Name: {row[1]}, Customer Address: {row[2]}, Customer Phone: {row[3]}, Courier Index: {row[4]}, Status: {row[5]}, Drink ID: {row[6]}, Food ID: {row[7]}")
+                print(f"ID: {row[0]}, Customer Name: {row[1]}, Customer Address: {row[2]}, Customer Phone: {row[3]}, Courier Index: {row[4]}, Status: {row[5]}, Drink ID: {row[6]}, Food ID: {row[7]}")
 
     except Exception as ex:
         print('Failed to:', ex)
 
 # Input for selection of an order number 
 def select_order():
-    return int(console.input("[bold]Select order index\t[/bold]"))
+
+    while True:
+        connection = get_connection()
+
+        with connection.cursor() as cursor: 
+            query = f'SELECT * FROM order_list ORDER BY id ASC'
+            cursor.execute(query)
+            order_rows = cursor.fetchall()
+
+            try:
+                user_input = console.input("[bold]Select Order index\t[/bold]")
+                if not user_input or not user_input.isdigit():
+                    print("[bold red]Error: Please enter a number.[/bold red]")
+                    continue
+                
+                selected_id = int(user_input)
+                order_ids = [int(row[0]) for row in order_rows]  # Extract just the IDs
+
+                if selected_id not in order_ids:
+                    print("[bold red]Error: Selected ID does not exist.[/bold red]")
+                    continue
+
+                return selected_id
+
+            except ValueError:
+                print("[bold red]Update unsuccessful. A valid ID was not entered.[/bold red]")
+                continue
 
 # Input for selection of an order status number
 def select_order_status(connection):
@@ -98,9 +124,6 @@ def select_order_status(connection):
         print("Failed to fetch order status:", ex)
         return None 
 
-
-
-
 def customer_name():
     while True:
         name = console.input('[bold]Enter customer name\t[/bold]').title()
@@ -109,7 +132,23 @@ def customer_name():
             print("Invalid: Only letters are allowed.")
             continue
 
+        if not name:
+            print("Invalid: Cannot leave blank")
+
         return name
+    
+def customer_name_optional():
+    while True:
+        name = console.input('[bold]Enter customer name\t[/bold]')
+
+        if not name:
+            return None
+
+        if any(char.isdigit() for char in name):
+            print("Invalid: Only letters are allowed.")
+            continue
+
+        return name.title()
 
 def address_street():   
     while True: 
@@ -117,9 +156,30 @@ def address_street():
 
         if not address:
             print("Cannot leave empty. Please enter a address.")
+            continue
 
         return address
     
+def full_address_optional():
+    street = console.input('[bold]Enter street name and number (leave blank to skip)\t[/bold]').strip()
+
+    if not street:
+        return None  # User wants to skip updating address
+
+    while True:
+        city = console.input('[bold]Enter city\t[/bold]').strip()
+        if city:
+            break
+        print("City cannot be blank if street is provided.")
+
+    while True:
+        postcode = console.input('[bold]Enter postcode\t[/bold]').strip()
+        if postcode:
+            break
+        print("Postcode cannot be blank if street is provided.")
+
+    return f"{street.title()}, {city.title()}, {postcode.capitalize()}"
+
 def address_city():
     while True:
         city =  console.input('[bold]Enter city \t[/bold]').title()
@@ -127,8 +187,20 @@ def address_city():
         if any(char.isdigit() for char in city):
             print("Invalid: Only letters are allowed.")
             continue
+        if not city:
+            print("Invalid: cannot leave blank")
 
         return city
+
+def address_city_optional():
+    while True:
+        city =  console.input('[bold]Enter city \t[/bold]')
+
+        if any(char.isdigit() for char in city):
+            print("Invalid: Only letters are allowed.")
+            continue
+
+        return city.title()
 
 def address_postcode():
     while True:
@@ -137,12 +209,18 @@ def address_postcode():
         if not postcode:
             print("Postcode must be enterd")
         return postcode
+    
+def address_postcode_optional():
+    while True:
+        postcode = console.input('[bold]Enter postcode \t[/bold]')
+        
+        return postcode.capitalize()
 
 def phone_number():
     while True:
         number = console.input('[bold]Enter number\t[/bold]')
 
-        if number == "":
+        if not number:
             print("Phone number cannot be empty. Please enter a valid number.")
             continue
         if not number.isdigit or not len(number) == 11:
@@ -150,6 +228,22 @@ def phone_number():
             continue
 
         return number
+    
+def phone_number_optional():
+    while True:
+        number = console.input('[bold]Enter number\t[/bold]')
+
+        if not number:
+            return None
+
+        try:
+            if len(number) != 11 or not number.isdigit():
+                raise ValueError("Must be exactly 11 digits with no letters or symbols.")
+            return number  # only happens if input is valid
+        
+        except ValueError as e:
+            print(f"Invalid: {e}")
+            continue  # input was invalid → go back to the top of the loop
 
 def add_order(connection):
     try:
@@ -195,8 +289,7 @@ def add_order(connection):
 
     except Exception as ex:
         print('Failed to:', ex) 
-    
-
+   
 def read_order_status(connection):
     try:
         with connection.cursor() as cursor:  # WITH - allows you to open cursor and automatically close the cursor.
@@ -211,7 +304,6 @@ def read_order_status(connection):
     except Exception as ex:
         print('Failed to:', ex)
 
-# Updating order status: order_menu_answer == 3
 def update_order_status(connection):
 
     read_order_db(connection)
@@ -226,100 +318,93 @@ def update_order_status(connection):
         connection.commit()
         print("[bold]Order status has been updated.[/bold]")
 
+def update_order(connection):
+        
+    read_order_db(connection)
+    selected_order = select_order()
+    update_name = customer_name_optional()
+    updated_address = full_address_optional()     
+    update_number = phone_number_optional()  
+
+    read_courier_db(connection)
+    selected_courier_index = select_courier_optional()
+
+    read_order_status(connection)
+    updated_status = select_order_status(connection)
+
+    drinks_index_list = []
+    read_product_db(connection,'drinks_list')
+    while True:
+
+        updated_drink_index = select_index_optional('drinks_list')
+        drinks_index_list.append(updated_drink_index)
+
+        if add_another() != "y":          
+            break
+
+
+    food_index_list = []
+    read_product_db(connection, 'food_list')
+    while True:
+        updated_food_index = select_index_optional('food_list')
+        food_index_list.append(updated_food_index)
+
+        if add_another() != "y":          
+            break
+
+
+    try:
+        values = []
+        updated_fields = []
+
+        if update_name:
+            values.append(update_name)
+            updated_fields.append("customer_name = %s")
+        if updated_address:
+            values.append(updated_address)
+            updated_fields.append("customer_address = %s")
+        if update_number:
+            values.append(update_number)
+            updated_fields.append("customer_phone = %s")
+        if selected_courier_index:
+            values.append(selected_courier_index)
+            updated_fields.append("courier_index = %s")
+        if updated_status:
+            values.append(updated_status)
+            updated_fields.append("status = %s")
+        if updated_drink_index:
+            values.append(drinks_index_list)
+            updated_fields.append("drinks_id = %s")
+        if updated_food_index:
+            values.append([food_index_list])
+            updated_fields.append("food_id = %s")
+        
+        values.append(selected_order)
+
+        with connection.cursor() as cursor:
+            query = f"UPDATE order_list SET {','.join(updated_fields)} WHERE id = %s"
+            cursor.execute(query, tuple(values))
+
+            connection.commit()
+            print("[bold green]Order updated successfully.[/bold green]")
+
+    except Exception as ex:
+        print('Failed to:', ex)
+
+def del_order(connection):
+
+    read_order_db(connection)
+    selected_order = select_order()
+
+    with connection.cursor() as cursor:
+        query = "DELETE FROM order_list WHERE id = %s"
+        cursor.execute(query, (selected_order,))
+
+        connection.commit()
+        print("[bold green]Order deleted successfully.[/bold green]")
+
     
 
-# Updating order: order_menu_answer == 4
-# Updating existing name, address, etc 
-def update_order():
-        
-    readcsv = read_only_order()
-    display_order_csv(readcsv)
-
-    selected_order_index = select_order() #order from dict you want to select
-    update_name = customer_name().title()
-    update_street = address_street().title()
-    update_city = address_city().title()
-    update_postcode = address_postcode().capitalize()
-    update_address = f"{update_street}, {update_city}, {update_postcode}"        
-    update_number = phone_number()
-
-    # Construct the full address from the parts
-    if update_street and update_city and update_postcode:
-        update_address = f"{update_street}, {update_city}, {update_postcode}"
-
-
-    read_courier_db
-
-    selected_courier = select_courier()   
-
-    read_product_db('drinks_list')
-    drink_index = product_index()
-
-    read_product_db('food_list')
-    food_index = product_index()
-
-    if update_street and update_city and update_postcode:
-        update_address = f"{update_street}, {update_city}, {update_postcode}"
-        readcsv[selected_order_index]['Customer address'] = update_address
-        print("[bold green]Customer address has been updated[/bold green]")
-    else:
-        print("[bold red]Customer number not updated[/bold red]")
-
-
-    if update_name:# If they update inpput then do the below, and if not leave as is
-        readcsv[selected_order_index]['Customer name'] = update_name   # • Selecting customer name with selected index updating to = input
-        print("[bold green]Customer name has been updated[/bold green]")
-
-    else:
-        print("[bold red]Customer name has not updated[/bold red]")
-
-    if update_number:
-        if update_number.isdigit() and len(update_number) == 11:
-            readcsv[selected_order_index]['Customer phone'] = update_number
-            print("[bold green]Customer number has been updated[/bold green]")
-        else: 
-            print("[bold red]Update unsuccessful: Please ensure the phone number contains exactly 11 digits[/bold red]")
-    else:
-        print("[bold red]Customer number not updated[/bold red]")
-
-    if selected_courier: 
-        readcsv[selected_order_index]['Courier index'] = read_courier_csv[selected_courier]          
-        print("[bold green]Courier has been updated[/bold green]")
-    else:
-        print("[bold red]Courier has not updated[/bold red]")
-
-    if drink_index: 
-        readcsv[selected_order_index]['Drink index'] = drink_index          
-        print("[bold green]Drink index has been updated[/bold green]")
-    else:
-        print("[bold red]Drink index has not updated[/bold red]")
-
-    if food_index: 
-        readcsv[selected_order_index]['Food index'] = food_index          
-        print("[bold green]Food index has been updated[/bold green]")
-    else:
-        print("[bold red]Food index has not updated[/bold red]")
-
-    write_order_csv(readcsv)
-
-
-# Deleting order: order_menu_answer == 5
-# Print, •Input to select index from order dict, •Deleting index from order, •Print 
-
-def del_order():
-    try:
-        readcsv = read_only_order()
-        display_order_csv(readcsv)
-        selected_index = select_order()
-
-        del readcsv[selected_index]
-        
-        write_order_csv(readcsv)
-        print("[bold green]The order has been succesfully deleted.[/bold green]")                    
-    except ValueError:
-        print("[bold red]Update unsucessful. A valid value was not entered.[/bold red]")
-    except IndexError:
-        print("[bold red]Update unsucessful. The index entered does not exist.[/bold red]")
 
 
 

@@ -104,24 +104,45 @@ def select_courier():
         cursor.execute(query)
         courier_rows = cursor.fetchall()
 
-        try:
-            user_input = console.input("[bold]Select courier index: [/bold]")
-            if not user_input or not user_input.isdigit():
-                print("[bold red]Error: Please enter a number.[/bold red]")
-                return None
-
-            selected_id = int(user_input)
-            courier_ids = [row[0] for row in courier_rows]  # Extract just the IDs
-
-            if selected_id not in courier_ids:
-                print("[bold red]Error: Selected courier ID does not exist.[/bold red]")
-                return None
-
-            return selected_id
-
-        except ValueError:
-            print("[bold red]Update unsuccessful. A valid number was not entered.[/bold red]")
+        user_input = console.input("[bold]Select courier index: [/bold]")
+        if not user_input or not user_input.isdigit():
+            print("[bold red]Error: Please enter a number.[/bold red]")
             return None
+
+        selected_id = int(user_input)
+        courier_ids = [row[0] for row in courier_rows]  # Extract just the IDs
+
+        if selected_id not in courier_ids:
+            print("[bold red]Error: Selected courier ID does not exist.[/bold red]")
+            return None
+
+        return selected_id
+    
+def select_courier_optional():
+    connection = get_connection()
+    with connection.cursor() as cursor:
+        query = f'SELECT * FROM courier_list ORDER BY courier_id ASC'
+        cursor.execute(query)
+        courier_rows = cursor.fetchall()
+
+        user_input = console.input("[bold]Select courier index: [/bold]")
+
+        if not user_input:
+            return None
+        
+        if not user_input.isdigit():
+            print("[bold red]Error: Please enter a number.[/bold red]")
+            return None
+
+        selected_id = int(user_input)
+        courier_ids = [row[0] for row in courier_rows]  # Extract just the IDs
+
+        if selected_id not in courier_ids:
+            print("[bold red]Error: Selected courier ID does not exist.[/bold red]")
+            return None
+
+        return selected_id
+
 
 
 # ------------------------------------------------- Main components of mini project ------------------------------------------------------------- 
