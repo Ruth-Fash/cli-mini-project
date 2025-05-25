@@ -8,9 +8,6 @@ import psycopg2 as psycopg
 import os
 from dotenv import load_dotenv
 
-
-
-
 from modules.functions_module \
 import display, \
         return_to_submenu, return_answer, delete_another, add_another, clear_screen
@@ -71,7 +68,6 @@ def read_product_db(connection,table_name):
     except Exception as ex:
         print('Failed to:', ex)
 
-
 def new_product():
     product_name = console.input("[bold]Add new product name \t[/bold]").title()
 
@@ -80,7 +76,6 @@ def new_product():
         return None
        
     return product_name
-
 
 def new_price():
     try:
@@ -97,7 +92,22 @@ def new_price():
     except ValueError:
         print("[bold red]Invalid input. Please enter a number.[/bold red]")
         return None
+  
+def updated_product():
+        return str(console.input("[bold]Enter new name for (leave blank to keep current name): \t[/bold]")).title()
 
+def updated_price():
+    input_price = console.input("[bold]Enter new price (leave blank to keep current price): \t[/bold]")
+
+    if not input_price:
+        return None
+    
+    try:
+        updated_price = float(input_price)
+        return updated_price  
+    except ValueError:
+        print("[bold red]Invalid input. Please enter a number.[/bold red]")
+        return None
 
 def select_index(table_name):
 
@@ -121,7 +131,6 @@ def select_index(table_name):
                 continue
 
             return selected_id
-
 
 def select_index_optional(table_name):
 
@@ -149,25 +158,6 @@ def select_index_optional(table_name):
                 continue
 
             return selected_id
-  
-
-def updated_product():
-        return str(console.input("[bold]Enter new name for (leave blank to keep current name): \t[/bold]")).title()
-
-
-def updated_price():
-    input_price = console.input("[bold]Enter new price (leave blank to keep current price): \t[/bold]")
-
-    if not input_price:
-        return None
-    
-    try:
-        updated_price = float(input_price)
-        return updated_price  
-    except ValueError:
-        print("[bold red]Invalid input. Please enter a number.[/bold red]")
-        return None
-
 
 def add_drink(connection):
     product = new_product()
@@ -186,7 +176,6 @@ def add_drink(connection):
     except Exception as ex:
         print('Failed to:', ex) 
         
-
 def add_food(connection):
     product = new_product()
     price = new_price()
@@ -204,10 +193,6 @@ def add_food(connection):
     except Exception as ex:
         print('Failed to:', ex) 
         
-
-# Updating an exisiting drinks name and/or price: selected_product_menu == 5  
-# Read and print csv; User inputs for drink index to update, and updates drink/price. If user leaves blank will stay as orginal
-# If not it will update and write it back into the csv 
 def update_drink(connection):
     index = select_index('drinks_list')
     drinkname = updated_product()
@@ -248,9 +233,6 @@ def update_drink(connection):
     except Exception as ex:
         print('Failed to:', ex)
 
-
-# Selected_product_menu == 6
-# Same as above but for food
 def update_food(connection):
     index = select_index('food_list')
     foodname = updated_product()
@@ -290,9 +272,6 @@ def update_food(connection):
     except Exception as ex:
         print('Failed to:', ex)
 
-# Deleting an exisiting drinks name and/or price: selected_product_menu == 7 
-# Read and print csv; User inputs for drink index to delete, and updates drink/price. 
-# It will update and write it back into the csv 
 def del_drink(connection):
     index = select_index('drinks_list')
 
@@ -312,10 +291,6 @@ def del_drink(connection):
     except Exception as ex:
         print('Failed to:', ex)
 
-
-        
-# Selected_product_menu == 8
-# Same as above but for food
 def del_food(connection):
 
     index = select_index('food_list')

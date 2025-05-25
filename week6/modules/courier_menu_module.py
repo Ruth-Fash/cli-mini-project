@@ -68,7 +68,6 @@ def input_driver_name_optional():
 
         return user_input
 
-    
 def input_phone_number():
     while True:
         user_input = console.input("[bold]Enter courier phone number \t[/bold]")
@@ -95,7 +94,6 @@ def input_phone_number_optional():
             continue
 
         return user_input
-
 
 def select_courier():
     connection = get_connection()
@@ -143,12 +141,6 @@ def select_courier_optional():
 
         return selected_id
 
-
-
-# ------------------------------------------------- Main components of mini project ------------------------------------------------------------- 
-
-
-# Function to read(r) the csv file: 
 def read_courier_db(connection):
     try:
 
@@ -164,9 +156,6 @@ def read_courier_db(connection):
     except Exception as ex:
         print('Failed to:', ex)
 
-            
-
-#3 Function to append(a) the csv file: 
 def append_courier_db(connection):
 
     courier_name = input_business_name()
@@ -187,11 +176,6 @@ def append_courier_db(connection):
     except Exception as ex:
         print('Failed to:', ex)
 
-
-# Courier_menu_answer == 3: 
-   # 3 = Update existing courier
-    # • Print list, • Select index to update, • Insert new name, 
-    # • Updates courier list based of index selected to = input in updated_courier
 def update_courier_db(connection):
     
     while True:
@@ -241,9 +225,6 @@ def update_courier_db(connection):
     except Exception as ex:
         print('Failed to update courier:', ex)
 
-
-
-# Courier_menu_answer == 4: 
 def del_courier_db(connection):
     try:
 

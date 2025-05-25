@@ -56,7 +56,7 @@ order_status = ['Order Pending','Order Confirmed','Preparing','Out for Delivery'
 
 
     
-#2 Function to read(r) the csv file: 
+
 def read_order_db(connection):
     try:
         with connection.cursor() as cursor:  # WITH - allows you to open cursor and automatically close the cursor.
@@ -71,7 +71,20 @@ def read_order_db(connection):
     except Exception as ex:
         print('Failed to:', ex)
 
-# Input for selection of an order number 
+def read_order_status(connection):
+    try:
+        with connection.cursor() as cursor:  # WITH - allows you to open cursor and automatically close the cursor.
+            query = "SELECT * FROM order_status"
+
+            cursor.execute(query)
+            order_status = cursor.fetchall()
+
+            for row in order_status :
+                print(f"ID:{row[0]}, Status: {row[1]}")
+
+    except Exception as ex:
+        print('Failed to:', ex)
+
 def select_order():
 
     while True:
@@ -101,7 +114,6 @@ def select_order():
                 print("[bold red]Update unsuccessful. A valid ID was not entered.[/bold red]")
                 continue
 
-# Input for selection of an order status number
 def select_order_status(connection):
     try:
         selection =  int(console.input("[bold]Select order status index\t[/bold]"))
@@ -192,16 +204,6 @@ def address_city():
 
         return city
 
-def address_city_optional():
-    while True:
-        city =  console.input('[bold]Enter city \t[/bold]')
-
-        if any(char.isdigit() for char in city):
-            print("Invalid: Only letters are allowed.")
-            continue
-
-        return city.title()
-
 def address_postcode():
     while True:
         postcode = console.input('[bold]Enter postcode \t[/bold]').capitalize()
@@ -210,12 +212,6 @@ def address_postcode():
             print("Postcode must be enterd")
         return postcode
     
-def address_postcode_optional():
-    while True:
-        postcode = console.input('[bold]Enter postcode \t[/bold]')
-        
-        return postcode.capitalize()
-
 def phone_number():
     while True:
         number = console.input('[bold]Enter number\t[/bold]')
@@ -289,20 +285,6 @@ def add_order(connection):
 
     except Exception as ex:
         print('Failed to:', ex) 
-   
-def read_order_status(connection):
-    try:
-        with connection.cursor() as cursor:  # WITH - allows you to open cursor and automatically close the cursor.
-            query = "SELECT * FROM order_status"
-
-            cursor.execute(query)
-            order_status = cursor.fetchall()
-
-            for row in order_status :
-                print(f"ID:{row[0]}, Status: {row[1]}")
-
-    except Exception as ex:
-        print('Failed to:', ex)
 
 def update_order_status(connection):
 
